@@ -1,0 +1,82 @@
+import { FormEvent, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getErrorMessage } from "../services/api";
+
+export function Register() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (password.length < 6) {
+      setError("A senha precisa ter ao menos 6 caracteres.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await register(email, password, name || undefined, businessName || undefined);
+      navigate("/");
+    } catch (err) {
+      setError(getErrorMessage(err, "Não foi possível criar a conta."));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <span className="auth-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 17l5-5 4 4 7-9" stroke="#12261c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <h1>Criar conta</h1>
+        <label>
+          Nome
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <label>
+          Email
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </label>
+        <label>
+          Senha
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </label>
+
+        <div className="auth-section">
+          <span className="field-label">Negócios (opcional)</span>
+          <label>
+            Nome do seu negócio
+            <input
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="Ex: Cavalieri"
+            />
+          </label>
+          <p className="auth-hint">Dá pra deixar em branco e configurar depois, na aba Empresa.</p>
+        </div>
+
+        {error && <p className="form-error">{error}</p>}
+        <button type="submit" className="btn-primary" disabled={submitting}>
+          Criar conta
+        </button>
+        <p className="auth-switch">
+          Já tem conta? <Link to="/login">Entrar</Link>
+        </p>
+      </form>
+    </div>
+  );
+}
