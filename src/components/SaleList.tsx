@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getErrorMessage } from "../services/api";
 import { PizzaSale } from "../types";
 
 interface SaleListProps {
@@ -11,27 +12,37 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", cu
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function parseNumber(value: string): number | null {
-  const n = Number(value.replace(",", "."));
-  return value.trim() && Number.isFinite(n) ? n : null;
+  let cleaned = value.replace(/R\$|\s/g, "");
+  if (cleaned.includes(",")) cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+  const n = Number(cleaned);
+  return cleaned && Number.isFinite(n) ? n : null;
 }
 
 export function SaleList({ sales, onDelete, onUpdateProfit }: SaleListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [profitDraft, setProfitDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   function startEdit(sale: PizzaSale) {
     setEditingId(sale.id);
+    setEditError(null);
     setProfitDraft(sale.totalProfit.toFixed(2).replace(".", ","));
   }
 
   async function saveEdit(sale: PizzaSale) {
     const value = parseNumber(profitDraft);
-    if (value === null) return;
+    if (value === null) {
+      setEditError("Valor inválido. Use um número, ex.: 12,50");
+      return;
+    }
     setSaving(true);
+    setEditError(null);
     try {
       await onUpdateProfit(sale, value);
       setEditingId(null);
+    } catch (err) {
+      setEditError(getErrorMessage(err, "Não foi possível salvar o lucro."));
     } finally {
       setSaving(false);
     }
@@ -74,6 +85,7 @@ export function SaleList({ sales, onDelete, onUpdateProfit }: SaleListProps) {
                       if (e.key === "Escape") setEditingId(null);
                     }}
                   />
+                  {editError && <p className="form-error">{editError}</p>}
                 </td>
               ) : (
                 <td data-label="Lucro" className={s.totalProfit >= 0 ? "amount-income" : "amount-expense"}>
