@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getErrorMessage } from "../services/api";
 import { PizzaSale } from "../types";
+import { parseDecimal } from "../utils/number";
 
 interface SaleListProps {
   sales: PizzaSale[];
@@ -10,13 +11,6 @@ interface SaleListProps {
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
-
-function parseNumber(value: string): number | null {
-  let cleaned = value.replace(/R\$|\s/g, "");
-  if (cleaned.includes(",")) cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-  const n = Number(cleaned);
-  return cleaned && Number.isFinite(n) ? n : null;
-}
 
 export function SaleList({ sales, onDelete, onUpdateProfit }: SaleListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -31,7 +25,7 @@ export function SaleList({ sales, onDelete, onUpdateProfit }: SaleListProps) {
   }
 
   async function saveEdit(sale: PizzaSale) {
-    const value = parseNumber(profitDraft);
+    const value = parseDecimal(profitDraft);
     if (value === null) {
       setEditError("Valor inválido. Use um número, ex.: 12,50");
       return;

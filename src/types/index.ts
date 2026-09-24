@@ -140,4 +140,6 @@ export interface SalesSummary {
   totalRevenue: number;
   totalCost: number;
   totalProfit: number;
+  autoProfit?: number;
+  profitIsManual?: boolean;
 }

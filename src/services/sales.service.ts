@@ -38,3 +38,11 @@ export async function getSalesSummary(month: string): Promise<SalesSummary> {
   const { data } = await api.get<SalesSummary>("/sales/summary", { params: { month } });
   return data;
 }
+
+export async function setMonthlyProfit(month: string, totalProfit: number): Promise<void> {
+  await api.put(`/sales/summary/${month}/profit`, { totalProfit });
+}
+
+export async function clearMonthlyProfit(month: string): Promise<void> {
+  await api.delete(`/sales/summary/${month}/profit`);
+}

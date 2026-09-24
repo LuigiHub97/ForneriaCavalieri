@@ -122,7 +122,17 @@ export function Dashboard() {
           {summary && (
             <>
               <h2>Fechamento do mês</h2>
-              <EmpresaSummaryCards summary={summary} />
+              <EmpresaSummaryCards
+                summary={summary}
+                onSaveProfit={async (value) => {
+                  await salesService.setMonthlyProfit(month, value);
+                  await reload();
+                }}
+                onClearProfit={async () => {
+                  await salesService.clearMonthlyProfit(month);
+                  await reload();
+                }}
+              />
             </>
           )}
 
