@@ -22,6 +22,7 @@ export function SaleForm({ pizzas, onSubmit }: SaleFormProps) {
   const [quantity, setQuantity] = useState("1");
   const [unitPrice, setUnitPrice] = useState("");
   const [commissionPct, setCommissionPct] = useState("0");
+  const [manualProfit, setManualProfit] = useState("");
   const [date, setDate] = useState(todayISO());
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -52,11 +53,13 @@ export function SaleForm({ pizzas, onSubmit }: SaleFormProps) {
         quantity: qty,
         unitPrice: price,
         commissionPct: parseNumber(commissionPct),
+        totalProfit: manualProfit.trim() ? parseNumber(manualProfit) : undefined,
         date: new Date(date).toISOString(),
       });
       setPizzaId("");
       setQuantity("1");
       setUnitPrice("");
+      setManualProfit("");
       setDate(todayISO());
     } catch {
       setError("Não foi possível registrar a venda.");
@@ -64,6 +67,14 @@ export function SaleForm({ pizzas, onSubmit }: SaleFormProps) {
       setSubmitting(false);
     }
   }
+
+  const selectedPizza = pizzas.find((p) => p.id === pizzaId);
+  const previewQty = parseNumber(quantity);
+  const previewPrice = parseNumber(unitPrice);
+  const autoProfit =
+    selectedPizza && previewQty > 0 && previewPrice > 0
+      ? (previewPrice - selectedPizza.totalCost - previewPrice * (parseNumber(commissionPct) / 100)) * previewQty
+      : null;
 
   if (pizzas.length === 0) {
     return <p className="empty-state">Cadastre uma pizza primeiro para poder registrar vendas.</p>;
@@ -119,6 +130,20 @@ export function SaleForm({ pizzas, onSubmit }: SaleFormProps) {
           </button>
         ))}
       </div>
+
+      <div className="form-row">
+        <label>
+          Lucro total (opcional)
+          <input
+            type="text"
+            inputMode="decimal"
+            value={manualProfit}
+            onChange={(e) => setManualProfit(e.target.value)}
+            placeholder={autoProfit !== null ? autoProfit.toFixed(2).replace(".", ",") : "Automático"}
+          />
+        </label>
+      </div>
+      <p className="form-hint">Deixe em branco para calcular o lucro automaticamente.</p>
 
       {error && <p className="form-error">{error}</p>}
 

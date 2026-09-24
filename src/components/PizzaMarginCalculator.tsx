@@ -16,13 +16,16 @@ export function PizzaMarginCalculator({ cmvTotal }: PizzaMarginCalculatorProps) 
   const [sellingPrice, setSellingPrice] = useState("");
   const [commissionPct, setCommissionPct] = useState("0");
   const [quantity, setQuantity] = useState("1");
+  const [manualProfit, setManualProfit] = useState("");
 
   const price = parseNumber(sellingPrice);
   const qty = Math.max(1, parseNumber(quantity) || 1);
   const commissionValue = price * (parseNumber(commissionPct) / 100);
   const totalCost = cmvTotal + commissionValue;
   const totalCostPct = price > 0 ? (totalCost / price) * 100 : 0;
-  const profit = price - totalCost;
+  const autoProfit = price - totalCost;
+  const isManualProfit = manualProfit.trim() !== "";
+  const profit = isManualProfit ? parseNumber(manualProfit) : autoProfit;
   const hasPrice = price > 0;
 
   const qtyRevenue = price * qty;
@@ -76,6 +79,19 @@ export function PizzaMarginCalculator({ cmvTotal }: PizzaMarginCalculatorProps) 
         </label>
       </div>
 
+      <div className="form-row">
+        <label>
+          Lucro por pizza (opcional)
+          <input
+            type="text"
+            inputMode="decimal"
+            value={manualProfit}
+            onChange={(e) => setManualProfit(e.target.value)}
+            placeholder={hasPrice ? autoProfit.toFixed(2).replace(".", ",") : "Automático"}
+          />
+        </label>
+      </div>
+
       {!hasPrice && <p className="form-hint">Informe o preço de venda acima para calcular a comissão e o lucro.</p>}
 
       {hasPrice && (
@@ -92,7 +108,7 @@ export function PizzaMarginCalculator({ cmvTotal }: PizzaMarginCalculatorProps) 
               </span>
             </div>
             <div className={"pizza-summary-row " + (profit > 0 ? "pizza-margin-positive" : "pizza-margin-negative")}>
-              <span>Lucro líquido por pizza</span>
+              <span>Lucro líquido por pizza{isManualProfit ? " (manual)" : ""}</span>
               <span className="num">{currencyFormatter.format(profit)}</span>
             </div>
           </div>
@@ -112,7 +128,7 @@ export function PizzaMarginCalculator({ cmvTotal }: PizzaMarginCalculatorProps) 
                 "pizza-summary-row pizza-summary-total " + (qtyProfit > 0 ? "pizza-margin-positive" : "pizza-margin-negative")
               }
             >
-              <span>Lucro líquido total</span>
+              <span>Lucro líquido total{isManualProfit ? " (manual)" : ""}</span>
               <span className="num">{currencyFormatter.format(qtyProfit)}</span>
             </div>
           </div>

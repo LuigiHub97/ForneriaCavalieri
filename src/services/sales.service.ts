@@ -6,6 +6,7 @@ export interface SaleInput {
   quantity: number;
   unitPrice: number;
   commissionPct: number;
+  totalProfit?: number;
   date?: string;
 }
 
@@ -21,6 +22,11 @@ export async function listSales(filters: SaleFilters = {}): Promise<PizzaSale[]>
 
 export async function createSale(input: SaleInput): Promise<PizzaSale> {
   const { data } = await api.post<PizzaSale>("/sales", input);
+  return data;
+}
+
+export async function updateSaleProfit(id: string, totalProfit: number): Promise<PizzaSale> {
+  const { data } = await api.patch<PizzaSale>(`/sales/${id}`, { totalProfit });
   return data;
 }
 

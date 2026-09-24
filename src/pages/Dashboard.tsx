@@ -74,6 +74,11 @@ export function Dashboard() {
     await reload();
   }
 
+  async function handleUpdateSaleProfit(sale: PizzaSale, totalProfit: number) {
+    await salesService.updateSaleProfit(sale.id, totalProfit);
+    await reload();
+  }
+
   async function handleDeleteSale(sale: PizzaSale) {
     if (!confirm(`Excluir a venda de "${sale.pizzaName}"?`)) return;
     await salesService.deleteSale(sale.id);
@@ -160,7 +165,7 @@ export function Dashboard() {
 
           <div className="card">
             <h2>Vendas do mês</h2>
-            <SaleList sales={monthSales} onDelete={handleDeleteSale} />
+            <SaleList sales={monthSales} onDelete={handleDeleteSale} onUpdateProfit={handleUpdateSaleProfit} />
           </div>
         </>
       )}
